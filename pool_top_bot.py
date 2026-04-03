@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import requests
 from typing import Any, Dict, List, Optional
@@ -47,11 +48,11 @@ NETWORKS = {
     },
 }
 
-# 공통 기준
+# 공통 필터
 MIN_LIQUIDITY_DEFAULT = 50_000
 MIN_VOLUME_DEFAULT = 5_000
 
-# BSC 강화 기준
+# BSC 보수적 필터
 MIN_LIQUIDITY_BSC = 500_000
 MIN_VOLUME_BSC = 50_000
 MIN_LIQUIDITY_FOR_BSC_VOLUME_RANK = 1_000_000
@@ -185,11 +186,19 @@ def is_bad_token(symbol: str) -> bool:
     return any(k in s for k in BAD_KEYWORDS)
 
 
+def is_weird_symbol(sym: str) -> bool:
+    s = (sym or "").upper()
+    return re.match(r"^[A-Z0-9]+$", s) is None
+
+
 def valid_pair(base: str, quote: str) -> bool:
     base = normalize_symbol(base)
     quote = normalize_symbol(quote)
 
     if not base or not quote:
+        return False
+
+    if is_weird_symbol(base) or is_weird_symbol(quote):
         return False
 
     if base in STABLES and quote in STABLES:
@@ -285,11 +294,7 @@ def deduplicate_same_pair(chain: str, pools: List[Dict[str, Any]]) -> List[Dict[
         if pair_key in result:
             continue
 
-        # base 토큰 반복 제한
-        if chain == "bsc":
-            max_per_base = 1
-        else:
-            max_per_base = 2
+        max_per_base = 1 if chain == "bsc" else 2
 
         if base != "LGNS":
             cnt = base_token_count.get(base, 0)
@@ -313,6 +318,9 @@ def final_filter(chain: str, pools: List[Dict[str, Any]]) -> List[Dict[str, Any]
     for p in pools:
         base = normalize_symbol(p["base_symbol"])
         quote = normalize_symbol(p["quote_symbol"])
+
+        if is_weird_symbol(base) or is_weird_symbol(quote):
+            continue
 
         if is_bad_token(base) or is_bad_token(quote):
             continue
@@ -564,11 +572,10 @@ def update_state_with_pools(pools: List[Dict[str, Any]], state: Dict[str, Any]) 
 
 def build_top_sections(name: str, pools: List[Dict[str, Any]]) -> str:
     top_liq = sorted(pools, key=lambda x: (x["liq"], x["vol"]), reverse=True)[:TOP_N]
-    top_vol = sorted(
-        [p for p in pools if p["liq"] >= (MIN_LIQUIDITY_FOR_BSC_VOLUME_RANK if name == "BSC" else MIN_LIQUIDITY_DEFAULT)],
-        key=lambda x: (x["vol"], x["liq"]),
-        reverse=True
-    )[:TOP_N]
+
+    min_liq_for_volume_rank = MIN_LIQUIDITY_FOR_BSC_VOLUME_RANK if name == "BSC" else MIN_LIQUIDITY_DEFAULT
+    top_vol_candidates = [p for p in pools if p["liq"] >= min_liq_for_volume_rank]
+    top_vol = sorted(top_vol_candidates, key=lambda x: (x["vol"], x["liq"]), reverse=True)[:TOP_N]
 
     lines: List[str] = []
 
@@ -628,7 +635,7 @@ def main() -> None:
     message_parts.append("- pool_address 기준 중복 제거")
     message_parts.append("- 같은 pair는 가장 큰 유동성 1개만 유지")
     message_parts.append("- USDT0/USDC.E 등 표기 통합")
-    message_parts.append("- 밈코인/펌핑 필터 적용")
+    message_parts.append("- 밈코인/펌핑/이상한 심볼 필터 적용")
     message_parts.append("- BSC는 보수적 DEX/유동성 필터 적용")
     message_parts.append("- 유동성 급증 알림 포함")
     message_parts.append("- 신규 풀 탐지 포함")
