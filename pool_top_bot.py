@@ -1,260 +1,572 @@
 import os
+import json
 import requests
 from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
 
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
 TOP_N = 5
 REQUEST_TIMEOUT = 30
+STATE_FILE = "state.json"
 
 GECKO_URL = "https://api.geckoterminal.com/api/v2/networks/{chain}/pools"
 DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
 
-STABLES = {"USDT","USDC","DAI","BUSD","FDUSD","USDT0"}
-MAJORS = {"BTC","WBTC","BTCB","ETH","WETH","BNB","WBNB","MATIC","WMATIC","POL","WPOL"}
-
-BAD_KEYWORDS = {"doge","inu","baby","pepe","shib","cat","elon"}
+STABLES = {"USDT", "USDC", "DAI", "BUSD", "FDUSD", "USDT0", "TUSD"}
+MAJORS = {"BTC", "WBTC", "BTCB", "ETH", "WETH", "BNB", "WBNB", "MATIC", "WMATIC", "POL", "WPOL"}
+BAD_KEYWORDS = {"doge", "inu", "baby", "pepe", "shib", "cat", "elon"}
 
 NETWORKS = {
     "polygon_pos": {
         "label": "Polygon",
         "dex_chain": "polygon",
-        "keywords": ["LGNS","DAI","USDT","USDC","QuickSwap","Uniswap","Aave","Curve","Balancer","WETH","WBTC"]
+        "keywords": [
+            "LGNS", "Longinus", "DAI", "USDT", "USDC", "QuickSwap", "Uniswap",
+            "Aave", "Curve", "Balancer", "WETH", "WBTC", "POL", "WPOL", "MATIC"
+        ],
     },
     "bsc": {
         "label": "BSC",
         "dex_chain": "bsc",
-        "keywords": ["CAKE","WBNB","BNB","BTCB","USDT","USDC","PancakeSwap"]
-    }
+        "keywords": [
+            "CAKE", "WBNB", "BNB", "BTCB", "USDT", "USDC", "PancakeSwap", "THENA"
+        ],
+    },
 }
 
+# 알림 기준
+MIN_LIQUIDITY_DEFAULT = 50_000
+MIN_VOLUME_DEFAULT = 5_000
+MIN_LIQUIDITY_BSC = 300_000
 
-# -----------------------
-# 유틸
-# -----------------------
-def send(msg):
+SURGE_MIN_PREV_LIQ = 100_000
+SURGE_MIN_ABS_DELTA = 200_000
+SURGE_MULTIPLIER = 2.0
+
+NEW_MIN_LIQ = 200_000
+NEW_MIN_VOL = 50_000
+NEW_MAX_AGE_HOURS = 24
+
+
+def send_telegram_message(text: str) -> None:
+    if not TG_BOT_TOKEN or not TG_CHAT_ID:
+        raise ValueError("TG_BOT_TOKEN 또는 TG_CHAT_ID가 없습니다.")
+
     url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
-    requests.post(url, json={"chat_id": TG_CHAT_ID, "text": msg})
+    payload = {
+        "chat_id": TG_CHAT_ID,
+        "text": text,
+        "disable_web_page_preview": True,
+    }
+    r = requests.post(url, json=payload, timeout=REQUEST_TIMEOUT)
+    r.raise_for_status()
 
 
-def to_float(v):
+def split_message(text: str, chunk_size: int = 3500) -> List[str]:
+    if len(text) <= chunk_size:
+        return [text]
+
+    chunks: List[str] = []
+    current = ""
+
+    for line in text.splitlines(keepends=True):
+        if len(current) + len(line) > chunk_size:
+            if current:
+                chunks.append(current.rstrip())
+            current = line
+        else:
+            current += line
+
+    if current:
+        chunks.append(current.rstrip())
+
+    return chunks
+
+
+def to_float(value: Any, default: float = 0.0) -> float:
     try:
-        return float(v)
-    except:
-        return 0.0
+        if value is None:
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
 
 
-def fmt(n):
-    if n >= 1e9:
-        return f"{n/1e9:.2f}B"
-    if n >= 1e6:
-        return f"{n/1e6:.2f}M"
-    if n >= 1e3:
-        return f"{n/1e3:.2f}K"
-    return f"{n:.2f}"
+def fmt_num(value: Optional[float]) -> str:
+    if value is None:
+        return "-"
+    n = float(value)
+    if n >= 1_000_000_000:
+        return f"{n / 1_000_000_000:.2f}B"
+    if n >= 1_000_000:
+        return f"{n / 1_000_000:.2f}M"
+    if n >= 1_000:
+        return f"{n / 1_000:.2f}K"
+    if n >= 1:
+        return f"{n:.2f}"
+    return f"{n:.6f}"
 
 
-def is_bad(sym):
-    s = sym.lower()
-    return any(k in s for k in BAD_KEYWORDS)
+def now_ts() -> int:
+    return int(datetime.now(timezone.utc).timestamp())
 
 
-def valid(base, quote):
-    base = base.upper()
-    quote = quote.upper()
+def ts_to_text(ts: Optional[int]) -> str:
+    if not ts:
+        return "-"
+    dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+    return dt.strftime("%Y-%m-%d %H:%M UTC")
+
+
+def hours_since(ts: Optional[int]) -> Optional[float]:
+    if not ts:
+        return None
+    return (now_ts() - int(ts)) / 3600.0
+
+
+def load_state() -> Dict[str, Any]:
+    if not os.path.exists(STATE_FILE):
+        return {"pools": {}}
+    try:
+        with open(STATE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            return {"pools": {}}
+        if "pools" not in data or not isinstance(data["pools"], dict):
+            data["pools"] = {}
+        return data
+    except Exception:
+        return {"pools": {}}
+
+
+def save_state(state: Dict[str, Any]) -> None:
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
+
+
+def valid_pair(base: str, quote: str) -> bool:
+    base = (base or "").upper()
+    quote = (quote or "").upper()
+
+    if not base or not quote:
+        return False
 
     if base in STABLES and quote in STABLES:
         return False
+
     if base in MAJORS and quote in MAJORS:
         return False
+
     if (base in STABLES and quote in MAJORS) or (base in MAJORS and quote in STABLES):
         return False
 
-    if is_bad(base) or is_bad(quote):
+    if is_bad_token(base) or is_bad_token(quote):
         return False
 
     return True
 
 
-# -----------------------
-# Gecko
-# -----------------------
-def fetch_gecko(chain):
-    pools = []
+def is_bad_token(symbol: str) -> bool:
+    s = (symbol or "").lower()
+    return any(k in s for k in BAD_KEYWORDS)
 
-    for page in range(1,6):
-        try:
-            r = requests.get(GECKO_URL.format(chain=chain),
-                params={"page":page,"include":"base_token,quote_token,dex"}).json()
-        except:
+
+def request_json(url: str, params: Optional[Dict[str, Any]] = None) -> Any:
+    r = requests.get(url, params=params, timeout=REQUEST_TIMEOUT)
+    r.raise_for_status()
+    return r.json()
+
+
+def extract_pool_address_from_url(url: str) -> str:
+    if not url:
+        return ""
+    try:
+        return url.rstrip("/").split("/")[-1].lower()
+    except Exception:
+        return ""
+
+
+def normalize_pool(row: Dict[str, Any]) -> Dict[str, Any]:
+    row["pair"] = row.get("pair", "-")
+    row["base_symbol"] = (row.get("base_symbol") or "").upper()
+    row["quote_symbol"] = (row.get("quote_symbol") or "").upper()
+    row["dex"] = row.get("dex") or "-"
+    row["liq"] = to_float(row.get("liq"), 0.0)
+    row["vol"] = to_float(row.get("vol"), 0.0)
+    row["url"] = row.get("url") or "-"
+    row["pool_address"] = (row.get("pool_address") or "").lower()
+    row["pair_created_at"] = int(to_float(row.get("pair_created_at"), 0))
+    row["chain"] = row.get("chain") or "-"
+    return row
+
+
+def unique_key(pool: Dict[str, Any]) -> str:
+    if pool.get("pool_address"):
+        return f"{pool.get('chain','-')}:{pool['pool_address']}"
+    extracted = extract_pool_address_from_url(pool.get("url", ""))
+    if extracted:
+        return f"{pool.get('chain','-')}:{extracted}"
+    return f"{pool.get('chain','-')}:{pool.get('pair','')}_{pool.get('dex','')}".lower()
+
+
+def merge_pools(pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    uniq: Dict[str, Dict[str, Any]] = {}
+
+    for raw in pools:
+        p = normalize_pool(raw)
+        key = unique_key(p)
+
+        if key not in uniq:
+            uniq[key] = p
             continue
 
-        inc = {i["id"]:i for i in r.get("included",[])}
+        old = uniq[key]
 
-        for p in r.get("data",[]):
+        if p["liq"] > old["liq"]:
+            uniq[key] = p
+            continue
+
+        if p["liq"] == old["liq"] and p["vol"] > old["vol"]:
+            uniq[key] = p
+            continue
+
+        if old.get("url") in {"", "-"} and p.get("url") not in {"", "-"}:
+            old["url"] = p["url"]
+
+        if not old.get("pool_address") and p.get("pool_address"):
+            old["pool_address"] = p["pool_address"]
+
+        if (not old.get("pair_created_at")) and p.get("pair_created_at"):
+            old["pair_created_at"] = p["pair_created_at"]
+
+    return list(uniq.values())
+
+
+def deduplicate_same_pair(pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    result: Dict[str, Dict[str, Any]] = {}
+
+    for p in pools:
+        pair_key = (p.get("pair") or "").upper()
+        if not pair_key:
+            continue
+
+        if pair_key not in result:
+            result[pair_key] = p
+            continue
+
+        if p["liq"] > result[pair_key]["liq"]:
+            result[pair_key] = p
+            continue
+
+        if p["liq"] == result[pair_key]["liq"] and p["vol"] > result[pair_key]["vol"]:
+            result[pair_key] = p
+
+    return list(result.values())
+
+
+def pool_passes_common_filters(base_s: str, quote_s: str, liquidity: float, volume_h24: float) -> bool:
+    if not valid_pair(base_s, quote_s):
+        return False
+
+    if liquidity < MIN_LIQUIDITY_DEFAULT:
+        return False
+
+    if volume_h24 < MIN_VOLUME_DEFAULT:
+        return False
+
+    # 펌핑/왜곡 제거
+    if volume_h24 > liquidity * 3:
+        return False
+
+    return True
+
+
+def fetch_gecko(chain: str) -> List[Dict[str, Any]]:
+    pools: List[Dict[str, Any]] = []
+
+    for page in range(1, 6):
+        try:
+            data = request_json(
+                GECKO_URL.format(chain=chain),
+                params={"page": page, "include": "base_token,quote_token,dex"},
+            )
+        except Exception:
+            continue
+
+        included = {item.get("id"): item for item in data.get("included", [])}
+
+        for p in data.get("data", []):
             try:
-                attr = p["attributes"]
-                rel = p["relationships"]
+                attr = p.get("attributes", {})
+                rel = p.get("relationships", {})
 
-                base = inc.get(rel["base_token"]["data"]["id"],{}).get("attributes",{})
-                quote = inc.get(rel["quote_token"]["data"]["id"],{}).get("attributes",{})
-                dex = inc.get(rel["dex"]["data"]["id"],{}).get("attributes",{})
+                base_id = rel.get("base_token", {}).get("data", {}).get("id")
+                quote_id = rel.get("quote_token", {}).get("data", {}).get("id")
+                dex_id = rel.get("dex", {}).get("data", {}).get("id")
 
-                bs = base.get("symbol","").upper()
-                qs = quote.get("symbol","").upper()
+                base = included.get(base_id, {}).get("attributes", {})
+                quote = included.get(quote_id, {}).get("attributes", {})
+                dex = included.get(dex_id, {}).get("attributes", {})
 
-                if not valid(bs,qs):
+                base_s = (base.get("symbol") or "").upper()
+                quote_s = (quote.get("symbol") or "").upper()
+
+                liquidity = to_float(attr.get("reserve_in_usd"), 0.0)
+                volume_h24 = to_float((attr.get("volume_usd") or {}).get("h24"), 0.0)
+
+                if not pool_passes_common_filters(base_s, quote_s, liquidity, volume_h24):
                     continue
 
-                liq = to_float(attr.get("reserve_in_usd"))
-                vol = to_float(attr.get("volume_usd",{}).get("h24"))
-
-                if liq < 50000 or vol < 5000:
-                    continue
-
-                # 🔥 펌핑 제거
-                if vol > liq * 3:
-                    continue
+                address = (attr.get("address") or "").lower()
 
                 pools.append({
-                    "pair": f"{bs}/{qs}",
-                    "liq": liq,
-                    "vol": vol,
-                    "dex": dex.get("name",""),
-                    "url": f"https://www.geckoterminal.com/{chain}/pools/{attr.get('address')}",
-                    "addr": attr.get("address")
+                    "chain": chain,
+                    "pair": f"{base_s}/{quote_s}",
+                    "base_symbol": base_s,
+                    "quote_symbol": quote_s,
+                    "dex": dex.get("name", "-"),
+                    "liq": liquidity,
+                    "vol": volume_h24,
+                    "pool_address": address,
+                    "url": f"https://www.geckoterminal.com/{chain}/pools/{address}" if address else "-",
+                    "pair_created_at": 0,
                 })
-            except:
+            except Exception:
                 continue
 
     return pools
 
 
-# -----------------------
-# Dex
-# -----------------------
-def fetch_dex(chain, keywords):
-    pools = []
+def fetch_dex(chain: str, keywords: List[str]) -> List[Dict[str, Any]]:
+    pools: List[Dict[str, Any]] = []
 
-    for k in keywords:
+    for keyword in keywords:
         try:
-            r = requests.get(DEX_SEARCH_URL, params={"q":k}).json()
-        except:
+            data = request_json(DEX_SEARCH_URL, params={"q": keyword})
+        except Exception:
             continue
 
-        for p in r.get("pairs",[]):
+        for p in data.get("pairs", []):
             try:
-                if p.get("chainId") != chain:
+                if (p.get("chainId") or "").lower() != chain.lower():
                     continue
 
-                bs = p.get("baseToken",{}).get("symbol","").upper()
-                qs = p.get("quoteToken",{}).get("symbol","").upper()
+                base = p.get("baseToken", {}) or {}
+                quote = p.get("quoteToken", {}) or {}
 
-                if not valid(bs,qs):
-                    continue
+                base_s = (base.get("symbol") or "").upper()
+                quote_s = (quote.get("symbol") or "").upper()
 
-                liq = to_float(p.get("liquidity",{}).get("usd"))
-                vol = to_float(p.get("volume",{}).get("h24"))
+                liquidity = to_float((p.get("liquidity") or {}).get("usd"), 0.0)
+                volume_h24 = to_float((p.get("volume") or {}).get("h24"), 0.0)
 
-                if liq < 50000 or vol < 5000:
-                    continue
-
-                # 🔥 펌핑 제거
-                if vol > liq * 3:
+                if not pool_passes_common_filters(base_s, quote_s, liquidity, volume_h24):
                     continue
 
                 pools.append({
-                    "pair": f"{bs}/{qs}",
-                    "liq": liq,
-                    "vol": vol,
-                    "dex": p.get("dexId"),
-                    "url": p.get("url"),
-                    "addr": p.get("pairAddress")
+                    "chain": chain,
+                    "pair": f"{base_s}/{quote_s}",
+                    "base_symbol": base_s,
+                    "quote_symbol": quote_s,
+                    "dex": p.get("dexId", "-"),
+                    "liq": liquidity,
+                    "vol": volume_h24,
+                    "pool_address": (p.get("pairAddress") or "").lower(),
+                    "url": p.get("url") or "-",
+                    "pair_created_at": int(to_float(p.get("pairCreatedAt"), 0) / 1000),
                 })
-            except:
+            except Exception:
                 continue
 
     return pools
 
 
-# -----------------------
-# LGNS 강제
-# -----------------------
-def inject_lgns():
+def inject_lgns_manual() -> List[Dict[str, Any]]:
     return [{
+        "chain": "polygon",
         "pair": "LGNS/DAI",
+        "base_symbol": "LGNS",
+        "quote_symbol": "DAI",
+        "dex": "QuickSwap",
         "liq": 480_000_000,
         "vol": 40_000_000,
-        "dex": "QuickSwap",
+        "pool_address": "0x882df4b0fb50a229c3b4124eb18c759911485bfb",
         "url": "https://dexscreener.com/polygon/0x882df4b0fb50a229c3b4124eb18c759911485bfb",
-        "addr": "0x882df4b0fb50a229c3b4124eb18c759911485bfb"
+        "pair_created_at": 0,
     }]
 
 
-# -----------------------
-# 중복 제거 (주소 기준)
-# -----------------------
-def dedup_addr(pools):
-    m = {}
-    for p in pools:
-        key = p.get("addr") or p.get("url")
-        if key not in m or p["liq"] > m[key]["liq"]:
-            m[key] = p
-    return list(m.values())
+def build_pool_universe(chain: str, dex_chain: str, keywords: List[str]) -> List[Dict[str, Any]]:
+    gecko_pools = fetch_gecko(chain)
+    dex_pools = fetch_dex(dex_chain, keywords)
 
-
-# -----------------------
-# 같은 pair 정리
-# -----------------------
-def dedup_pair(pools):
-    m = {}
-    for p in pools:
-        k = p["pair"]
-        if k not in m or p["liq"] > m[k]["liq"]:
-            m[k] = p
-    return list(m.values())
-
-
-# -----------------------
-# 메인
-# -----------------------
-def build(chain, name, dex_chain, keywords):
-
-    pools = fetch_gecko(chain) + fetch_dex(dex_chain, keywords)
+    all_pools = gecko_pools + dex_pools
 
     if chain == "polygon_pos":
-        pools += inject_lgns()
+        all_pools += inject_lgns_manual()
 
-    pools = dedup_addr(pools)
-    pools = dedup_pair(pools)
+    pools = merge_pools(all_pools)
+    pools = deduplicate_same_pair(pools)
 
-    # 🔥 BSC 추가 필터
     if chain == "bsc":
-        pools = [p for p in pools if p["liq"] > 300000]
+        pools = [p for p in pools if p["liq"] > MIN_LIQUIDITY_BSC]
 
-    top_liq = sorted(pools, key=lambda x: x["liq"], reverse=True)[:TOP_N]
-    top_vol = sorted(pools, key=lambda x: x["vol"], reverse=True)[:TOP_N]
-
-    msg = f"[{name} 유동성 TOP {TOP_N}]\n"
-    for i,p in enumerate(top_liq,1):
-        msg += f"{i}) {p['pair']} | {p['dex']} | 유동성 {fmt(p['liq'])} | 거래량 {fmt(p['vol'])}\n{p['url']}\n"
-
-    msg += f"\n[{name} 거래량 TOP {TOP_N}]\n"
-    for i,p in enumerate(top_vol,1):
-        msg += f"{i}) {p['pair']} | {p['dex']} | 거래량 {fmt(p['vol'])} | 유동성 {fmt(p['liq'])}\n{p['url']}\n"
-
-    return msg
+    return pools
 
 
-def main():
-    msg = ""
+def detect_liquidity_surges(chain_label: str, pools: List[Dict[str, Any]], state: Dict[str, Any]) -> List[str]:
+    alerts: List[str] = []
+    pool_state = state.setdefault("pools", {})
+
+    for p in pools:
+        key = unique_key(p)
+        prev = pool_state.get(key, {})
+        prev_liq = to_float(prev.get("liq"), 0.0)
+        curr_liq = p["liq"]
+        delta = curr_liq - prev_liq
+
+        if (
+            prev_liq >= SURGE_MIN_PREV_LIQ
+            and curr_liq >= prev_liq * SURGE_MULTIPLIER
+            and delta >= SURGE_MIN_ABS_DELTA
+        ):
+            alerts.append(
+                f"🚀 [{chain_label} 유동성 급증]\n"
+                f"{p['pair']} | {p['dex']}\n"
+                f"이전: {fmt_num(prev_liq)} → 현재: {fmt_num(curr_liq)}\n"
+                f"증가액: {fmt_num(delta)}\n"
+                f"{p['url']}"
+            )
+
+    return alerts
+
+
+def detect_new_pools(chain_label: str, pools: List[Dict[str, Any]], state: Dict[str, Any]) -> List[str]:
+    alerts: List[str] = []
+    pool_state = state.setdefault("pools", {})
+
+    for p in pools:
+        key = unique_key(p)
+        prev = pool_state.get(key)
+
+        # 과거에 본 적 없고, 실제 생성 시간이 최근 24시간 이내인 경우 우선
+        if prev is None:
+            created_at = p.get("pair_created_at", 0)
+            age_h = hours_since(created_at)
+
+            if (
+                created_at
+                and age_h is not None
+                and age_h <= NEW_MAX_AGE_HOURS
+                and p["liq"] >= NEW_MIN_LIQ
+                and p["vol"] >= NEW_MIN_VOL
+            ):
+                alerts.append(
+                    f"🆕 [{chain_label} 신규 풀 감지]\n"
+                    f"{p['pair']} | {p['dex']}\n"
+                    f"유동성: {fmt_num(p['liq'])}\n"
+                    f"거래량: {fmt_num(p['vol'])}\n"
+                    f"생성시각: {ts_to_text(created_at)}\n"
+                    f"{p['url']}"
+                )
+
+    return alerts
+
+
+def update_state_with_pools(pools: List[Dict[str, Any]], state: Dict[str, Any]) -> None:
+    pool_state = state.setdefault("pools", {})
+    now = now_ts()
+
+    for p in pools:
+        key = unique_key(p)
+        old = pool_state.get(key, {})
+
+        first_seen = old.get("first_seen", now)
+        created_at = p.get("pair_created_at", 0) or old.get("pair_created_at", 0)
+
+        pool_state[key] = {
+            "pair": p["pair"],
+            "dex": p["dex"],
+            "liq": p["liq"],
+            "vol": p["vol"],
+            "url": p["url"],
+            "chain": p["chain"],
+            "first_seen": first_seen,
+            "last_seen": now,
+            "pair_created_at": created_at,
+        }
+
+
+def build_top_sections(name: str, pools: List[Dict[str, Any]]) -> str:
+    top_liq = sorted(pools, key=lambda x: (x["liq"], x["vol"]), reverse=True)[:TOP_N]
+    top_vol = sorted(pools, key=lambda x: (x["vol"], x["liq"]), reverse=True)[:TOP_N]
+
+    lines: List[str] = []
+
+    lines.append(f"[{name} 유동성 TOP {TOP_N}]")
+    if top_liq:
+        for i, p in enumerate(top_liq, 1):
+            lines.append(
+                f"{i}) {p['pair']} | {p['dex']} | 유동성 {fmt_num(p['liq'])} | 거래량 {fmt_num(p['vol'])}"
+            )
+            lines.append(f"{p['url']}")
+    else:
+        lines.append("- 후보 없음")
+
+    lines.append("")
+    lines.append(f"[{name} 거래량 TOP {TOP_N}]")
+    if top_vol:
+        for i, p in enumerate(top_vol, 1):
+            lines.append(
+                f"{i}) {p['pair']} | {p['dex']} | 거래량 {fmt_num(p['vol'])} | 유동성 {fmt_num(p['liq'])}"
+            )
+            lines.append(f"{p['url']}")
+    else:
+        lines.append("- 후보 없음")
+
+    return "\n".join(lines)
+
+
+def main() -> None:
+    state = load_state()
+    sections: List[str] = []
+    alerts: List[str] = []
+    all_current_pools: List[Dict[str, Any]] = []
+
     for chain, cfg in NETWORKS.items():
-        msg += build(chain, cfg["label"], cfg["dex_chain"], cfg["keywords"]) + "\n\n"
+        pools = build_pool_universe(chain=chain, dex_chain=cfg["dex_chain"], keywords=cfg["keywords"])
+        all_current_pools.extend(pools)
 
-    msg += "[안내]\n- 밈코인 제거\n- 펌핑 필터 적용\n- LGNS 강제 포함\n- 실전용 안정 버전"
+        sections.append(build_top_sections(cfg["label"], pools))
+        alerts.extend(detect_liquidity_surges(cfg["label"], pools, state))
+        alerts.extend(detect_new_pools(cfg["label"], pools, state))
 
-    send(msg)
+    update_state_with_pools(all_current_pools, state)
+    save_state(state)
+
+    message_parts: List[str] = []
+
+    if alerts:
+        message_parts.append("[알림]")
+        message_parts.extend(alerts)
+        message_parts.append("")
+
+    message_parts.extend(sections)
+    message_parts.append("")
+    message_parts.append("[안내]")
+    message_parts.append("- Gecko + DexScreener 무료 조합")
+    message_parts.append("- LGNS 대표 풀 강제 포함")
+    message_parts.append("- 중복 제거는 pool_address 기준")
+    message_parts.append("- 같은 pair는 가장 큰 유동성 1개만 유지")
+    message_parts.append("- 유동성 급증 알림 포함")
+    message_parts.append("- 신규 풀 탐지 포함")
+
+    final_message = "\n\n".join(message_parts)
+
+    for chunk in split_message(final_message):
+        send_telegram_message(chunk)
 
 
 if __name__ == "__main__":
