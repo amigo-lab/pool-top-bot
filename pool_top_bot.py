@@ -11,7 +11,7 @@ REQUEST_TIMEOUT = 30
 GECKO_URL = "https://api.geckoterminal.com/api/v2/networks/{chain}/pools"
 DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
 
-STABLES = {"USDT", "USDC", "DAI", "BUSD", "FDUSD", "USDT0"}
+STABLES = {"USDT", "USDC", "DAI", "BUSD", "FDUSD", "USDT0", "USD1"}
 MAJORS = {"BTC", "WBTC", "BTCB", "ETH", "WETH", "BNB", "WBNB", "MATIC", "WMATIC", "POL", "WPOL"}
 
 NETWORKS = {
@@ -36,6 +36,7 @@ NETWORKS = {
             "WPOL",
             "MATIC",
         ],
+        "max_same_base_in_top": 2,
     },
     "bsc": {
         "label": "BSC",
@@ -54,6 +55,7 @@ NETWORKS = {
             "Venus",
             "Lista",
         ],
+        "max_same_base_in_top": 1,
     },
 }
 
@@ -217,6 +219,41 @@ def deduplicate_same_pair(pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return list(result.values())
 
 
+def diversify_by_base_symbol(
+    pools: List[Dict[str, Any]],
+    top_n: int,
+    max_same_base: int
+) -> List[Dict[str, Any]]:
+    selected: List[Dict[str, Any]] = []
+    base_count: Dict[str, int] = {}
+
+    for p in pools:
+        base = (p.get("base_symbol") or "").upper()
+        count = base_count.get(base, 0)
+
+        if count >= max_same_base:
+            continue
+
+        selected.append(p)
+        base_count[base] = count + 1
+
+        if len(selected) >= top_n:
+            break
+
+    # 만약 필터 때문에 개수가 모자라면 남은 후보로 채움
+    if len(selected) < top_n:
+        used_urls = {x.get("url") for x in selected}
+        for p in pools:
+            if p.get("url") in used_urls:
+                continue
+            selected.append(p)
+            used_urls.add(p.get("url"))
+            if len(selected) >= top_n:
+                break
+
+    return selected
+
+
 def fetch_gecko(chain: str) -> List[Dict[str, Any]]:
     pools: List[Dict[str, Any]] = []
 
@@ -342,7 +379,7 @@ def inject_lgns_manual() -> List[Dict[str, Any]]:
     }]
 
 
-def build(chain: str, name: str, dex_chain: str, keywords: List[str]) -> str:
+def build(chain: str, name: str, dex_chain: str, keywords: List[str], max_same_base_in_top: int) -> str:
     gecko_pools = fetch_gecko(chain)
     dex_pools = fetch_dex(dex_chain, keywords)
 
@@ -354,8 +391,11 @@ def build(chain: str, name: str, dex_chain: str, keywords: List[str]) -> str:
     pools = merge_pools(all_pools)
     pools = deduplicate_same_pair(pools)
 
-    top_liq = sorted(pools, key=lambda x: (x["liq"], x["vol"]), reverse=True)[:TOP_N]
-    top_vol = sorted(pools, key=lambda x: (x["vol"], x["liq"]), reverse=True)[:TOP_N]
+    liq_sorted = sorted(pools, key=lambda x: (x["liq"], x["vol"]), reverse=True)
+    vol_sorted = sorted(pools, key=lambda x: (x["vol"], x["liq"]), reverse=True)
+
+    top_liq = diversify_by_base_symbol(liq_sorted, TOP_N, max_same_base_in_top)
+    top_vol = diversify_by_base_symbol(vol_sorted, TOP_N, max_same_base_in_top)
 
     lines: List[str] = []
 
@@ -393,6 +433,7 @@ def main() -> None:
                 name=cfg["label"],
                 dex_chain=cfg["dex_chain"],
                 keywords=cfg["search_keywords"],
+                max_same_base_in_top=cfg["max_same_base_in_top"],
             )
         )
 
@@ -400,6 +441,7 @@ def main() -> None:
     messages.append("- Gecko + DexScreener 무료 조합 버전")
     messages.append("- 중복 제거는 pool_address 기준")
     messages.append("- 같은 pair는 가장 큰 유동성 1개만 유지")
+    messages.append("- BSC는 같은 base 토큰 반복 노출을 줄이도록 보정")
     messages.append("- LGNS 대표 풀은 강제 포함 후 중복 제거")
 
     final_message = "\n\n".join(messages)
