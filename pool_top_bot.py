@@ -16,9 +16,12 @@ DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
 
 STABLES = {"USDT", "USDC", "DAI", "BUSD", "FDUSD", "USDT0", "TUSD"}
 MAJORS = {"BTC", "WBTC", "BTCB", "ETH", "WETH", "BNB", "WBNB", "MATIC", "WMATIC", "POL", "WPOL"}
-BAD_KEYWORDS = {"doge", "inu", "baby", "pepe", "shib", "cat", "elon"}
 
-# 같은 계열 표기 통합
+BAD_KEYWORDS = {
+    "doge", "inu", "baby", "pepe", "shib", "cat", "elon",
+    "banana", "bananas", "frog", "moon", "pump", "siren"
+}
+
 STABLE_ALIASES = {
     "USDT0": "USDT",
     "USD+": "USDT",
@@ -44,10 +47,20 @@ NETWORKS = {
     },
 }
 
-# 필터 기준
+# 공통 기준
 MIN_LIQUIDITY_DEFAULT = 50_000
 MIN_VOLUME_DEFAULT = 5_000
-MIN_LIQUIDITY_BSC = 300_000
+
+# BSC 강화 기준
+MIN_LIQUIDITY_BSC = 500_000
+MIN_VOLUME_BSC = 50_000
+MIN_LIQUIDITY_FOR_BSC_VOLUME_RANK = 1_000_000
+
+BSC_ALLOWED_DEX_KEYWORDS = {
+    "pancakeswap",
+    "thena",
+    "biswap",
+}
 
 # 급증 알림 기준
 SURGE_MIN_PREV_LIQ = 100_000
@@ -260,31 +273,38 @@ def merge_pools(pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return list(uniq.values())
 
 
-def deduplicate_same_pair(pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def deduplicate_same_pair(chain: str, pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     result: Dict[str, Dict[str, Any]] = {}
     base_token_count: Dict[str, int] = {}
 
-    # 유동성 큰 순서부터 정렬한 뒤 pair 중복 및 과다 토큰 노출 억제
     for p in sorted(pools, key=lambda x: (x["liq"], x["vol"]), reverse=True):
         base = normalize_symbol(p.get("base_symbol", ""))
         quote = normalize_symbol(p.get("quote_symbol", ""))
         pair_key = f"{base}/{quote}"
 
-        # pair 중복 제거
         if pair_key in result:
             continue
 
-        # BSC/전체에서 같은 base 토큰이 너무 많이 반복되는 현상 완화
-        # LGNS는 강제 유지, 나머지는 base 토큰당 최대 2개
+        # base 토큰 반복 제한
+        if chain == "bsc":
+            max_per_base = 1
+        else:
+            max_per_base = 2
+
         if base != "LGNS":
             cnt = base_token_count.get(base, 0)
-            if cnt >= 2:
+            if cnt >= max_per_base:
                 continue
             base_token_count[base] = cnt + 1
 
         result[pair_key] = p
 
     return list(result.values())
+
+
+def is_allowed_bsc_dex(dex_name: str) -> bool:
+    d = (dex_name or "").lower()
+    return any(k in d for k in BSC_ALLOWED_DEX_KEYWORDS)
 
 
 def final_filter(chain: str, pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -294,17 +314,19 @@ def final_filter(chain: str, pools: List[Dict[str, Any]]) -> List[Dict[str, Any]
         base = normalize_symbol(p["base_symbol"])
         quote = normalize_symbol(p["quote_symbol"])
 
-        if chain == "bsc":
-            if p["liq"] < MIN_LIQUIDITY_BSC:
-                continue
+        if is_bad_token(base) or is_bad_token(quote):
+            continue
 
-        # 너무 작은 유동성 대비 거래량 왜곡 제거
         if p["vol"] > p["liq"] * 3:
             continue
 
-        # 한번 더 방어적으로 밈 제거
-        if is_bad_token(base) or is_bad_token(quote):
-            continue
+        if chain == "bsc":
+            if p["liq"] < MIN_LIQUIDITY_BSC:
+                continue
+            if p["vol"] < MIN_VOLUME_BSC:
+                continue
+            if not is_allowed_bsc_dex(p["dex"]):
+                continue
 
         filtered.append(p)
 
@@ -452,7 +474,7 @@ def build_pool_universe(chain: str, dex_chain: str, keywords: List[str]) -> List
         all_pools += inject_lgns_manual()
 
     pools = merge_pools(all_pools)
-    pools = deduplicate_same_pair(pools)
+    pools = deduplicate_same_pair(dex_chain, pools)
     pools = final_filter(chain=dex_chain, pools=pools)
 
     return pools
@@ -542,7 +564,11 @@ def update_state_with_pools(pools: List[Dict[str, Any]], state: Dict[str, Any]) 
 
 def build_top_sections(name: str, pools: List[Dict[str, Any]]) -> str:
     top_liq = sorted(pools, key=lambda x: (x["liq"], x["vol"]), reverse=True)[:TOP_N]
-    top_vol = sorted(pools, key=lambda x: (x["vol"], x["liq"]), reverse=True)[:TOP_N]
+    top_vol = sorted(
+        [p for p in pools if p["liq"] >= (MIN_LIQUIDITY_FOR_BSC_VOLUME_RANK if name == "BSC" else MIN_LIQUIDITY_DEFAULT)],
+        key=lambda x: (x["vol"], x["liq"]),
+        reverse=True
+    )[:TOP_N]
 
     lines: List[str] = []
 
@@ -599,10 +625,11 @@ def main() -> None:
     message_parts.append("[안내]")
     message_parts.append("- Gecko + DexScreener 무료 조합")
     message_parts.append("- LGNS 대표 풀 강제 포함")
-    message_parts.append("- 중복 제거는 pool_address 기준")
+    message_parts.append("- pool_address 기준 중복 제거")
     message_parts.append("- 같은 pair는 가장 큰 유동성 1개만 유지")
     message_parts.append("- USDT0/USDC.E 등 표기 통합")
     message_parts.append("- 밈코인/펌핑 필터 적용")
+    message_parts.append("- BSC는 보수적 DEX/유동성 필터 적용")
     message_parts.append("- 유동성 급증 알림 포함")
     message_parts.append("- 신규 풀 탐지 포함")
 
