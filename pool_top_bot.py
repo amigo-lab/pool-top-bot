@@ -12,7 +12,7 @@ GECKO_URL = "https://api.geckoterminal.com/api/v2/networks/{chain}/pools"
 DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
 
 STABLES = {"USDT", "USDC", "DAI", "BUSD", "FDUSD", "USDT0"}
-MAJORS = {"BTC", "WBTC", "ETH", "WETH", "BNB", "WBNB", "MATIC", "WMATIC", "POL", "WPOL"}
+MAJORS = {"BTC", "WBTC", "BTCB", "ETH", "WETH", "BNB", "WBNB", "MATIC", "WMATIC", "POL", "WPOL"}
 
 NETWORKS = {
     "polygon_pos": {
@@ -179,23 +179,42 @@ def merge_pools(pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
         old = uniq[key]
 
-        # 더 큰 유동성 값 우선
         if p["liq"] > old["liq"]:
             uniq[key] = p
             continue
 
-        # 유동성이 같거나 작아도 거래량이 더 크면 보정
         if p["liq"] == old["liq"] and p["vol"] > old["vol"]:
             uniq[key] = p
             continue
 
-        # 기존값 유지하되, 링크가 없는 경우 새 링크 보완
         if old.get("url") in {"", "-"} and p.get("url") not in {"", "-"}:
             old["url"] = p["url"]
         if not old.get("pool_address") and p.get("pool_address"):
             old["pool_address"] = p["pool_address"]
 
     return list(uniq.values())
+
+
+def deduplicate_same_pair(pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    result: Dict[str, Dict[str, Any]] = {}
+
+    for p in pools:
+        pair_key = (p.get("pair") or "").upper()
+        if not pair_key:
+            continue
+
+        if pair_key not in result:
+            result[pair_key] = p
+            continue
+
+        if p["liq"] > result[pair_key]["liq"]:
+            result[pair_key] = p
+            continue
+
+        if p["liq"] == result[pair_key]["liq"] and p["vol"] > result[pair_key]["vol"]:
+            result[pair_key] = p
+
+    return list(result.values())
 
 
 def fetch_gecko(chain: str) -> List[Dict[str, Any]]:
@@ -311,8 +330,6 @@ def fetch_dex(chain: str, keywords: List[str]) -> List[Dict[str, Any]]:
 
 
 def inject_lgns_manual() -> List[Dict[str, Any]]:
-    # 대표 풀 고정 삽입
-    # 이후 merge_pools() 에서 같은 pool_address면 하나로 정리됨
     return [{
         "pair": "LGNS/DAI",
         "base_symbol": "LGNS",
@@ -335,6 +352,7 @@ def build(chain: str, name: str, dex_chain: str, keywords: List[str]) -> str:
         all_pools += inject_lgns_manual()
 
     pools = merge_pools(all_pools)
+    pools = deduplicate_same_pair(pools)
 
     top_liq = sorted(pools, key=lambda x: (x["liq"], x["vol"]), reverse=True)[:TOP_N]
     top_vol = sorted(pools, key=lambda x: (x["vol"], x["liq"]), reverse=True)[:TOP_N]
@@ -381,6 +399,7 @@ def main() -> None:
     messages.append("[안내]")
     messages.append("- Gecko + DexScreener 무료 조합 버전")
     messages.append("- 중복 제거는 pool_address 기준")
+    messages.append("- 같은 pair는 가장 큰 유동성 1개만 유지")
     messages.append("- LGNS 대표 풀은 강제 포함 후 중복 제거")
 
     final_message = "\n\n".join(messages)
