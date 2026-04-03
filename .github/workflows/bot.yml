@@ -9,6 +9,7 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +20,9 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - run: python pool_top_bot.py
+      - name: Run bot
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          GECKO_API_KEY: ${{ secrets.GECKO_API_KEY }}
+        run: python pool_top_bot.py
