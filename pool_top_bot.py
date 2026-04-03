@@ -1,6 +1,6 @@
 import os
 import requests
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
@@ -18,6 +18,7 @@ NETWORKS = {
         "dex_chain_id": "polygon",
         "seed_queries": [
             "LGNS",
+            "Longinus",
             "DAI",
             "USDT",
             "USDC",
@@ -33,10 +34,9 @@ NETWORKS = {
             "WPOL",
             "MATIC",
         ],
-        # LGNS 같은 주요 후보를 더 잘 잡기 위한 토큰 주소 직접 조회용
-        # 필요시 여기 계속 추가 가능
         "seed_token_addresses": [
-            # 예: "0x...."
+            # LGNS / Longinus
+            "0xeb51d9a39ad5eef215dc0bf39a8821ff804a0f01",
         ],
     },
     "bsc": {
@@ -57,7 +57,7 @@ NETWORKS = {
             "Lista",
         ],
         "seed_token_addresses": [
-            # 예: "0x...."
+            # 여기에 나중에 BSC에서 꼭 잡고 싶은 토큰 주소를 추가 가능
         ],
     },
 }
@@ -80,7 +80,7 @@ BAD_KEYWORDS = {
 
 REQUEST_HEADERS = {
     "Accept": "application/json",
-    "User-Agent": "pool-top-bot/3.0",
+    "User-Agent": "pool-top-bot/4.0",
 }
 
 
@@ -432,9 +432,9 @@ def build_message() -> str:
         sections.append("")
 
     sections.append("[안내]")
-    sections.append("- 무료 API 조합 버전입니다.")
-    sections.append("- Gecko 상위 풀 페이지 + DexScreener 검색/토큰풀 조회를 합쳐 재정렬합니다.")
-    sections.append("- 절대적인 체인 전체 순위는 아니지만, 무료 범위에서는 누락을 줄인 방식입니다.")
+    sections.append("- 무료 API 조합 버전")
+    sections.append("- Gecko 상위 풀 페이지 + DexScreener 검색 + DexScreener 주소기반 token-pairs 조회")
+    sections.append("- LGNS는 주소 기반 조회를 추가해 누락 가능성을 줄인 버전")
 
     return "\n".join(sections).strip()
 
