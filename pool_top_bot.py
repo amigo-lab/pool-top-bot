@@ -18,6 +18,14 @@ STABLES = {"USDT", "USDC", "DAI", "BUSD", "FDUSD", "USDT0", "TUSD"}
 MAJORS = {"BTC", "WBTC", "BTCB", "ETH", "WETH", "BNB", "WBNB", "MATIC", "WMATIC", "POL", "WPOL"}
 BAD_KEYWORDS = {"doge", "inu", "baby", "pepe", "shib", "cat", "elon"}
 
+# 같은 계열 표기 통합
+STABLE_ALIASES = {
+    "USDT0": "USDT",
+    "USD+": "USDT",
+    "USDC.E": "USDC",
+    "USDT.E": "USDT",
+}
+
 NETWORKS = {
     "polygon_pos": {
         "label": "Polygon",
@@ -36,15 +44,17 @@ NETWORKS = {
     },
 }
 
-# 알림 기준
+# 필터 기준
 MIN_LIQUIDITY_DEFAULT = 50_000
 MIN_VOLUME_DEFAULT = 5_000
 MIN_LIQUIDITY_BSC = 300_000
 
+# 급증 알림 기준
 SURGE_MIN_PREV_LIQ = 100_000
 SURGE_MIN_ABS_DELTA = 200_000
 SURGE_MULTIPLIER = 2.0
 
+# 신규 풀 알림 기준
 NEW_MIN_LIQ = 200_000
 NEW_MIN_VOL = 50_000
 NEW_MAX_AGE_HOURS = 24
@@ -146,9 +156,25 @@ def save_state(state: Dict[str, Any]) -> None:
         json.dump(state, f, ensure_ascii=False, indent=2)
 
 
+def request_json(url: str, params: Optional[Dict[str, Any]] = None) -> Any:
+    r = requests.get(url, params=params, timeout=REQUEST_TIMEOUT)
+    r.raise_for_status()
+    return r.json()
+
+
+def normalize_symbol(sym: str) -> str:
+    s = (sym or "").upper()
+    return STABLE_ALIASES.get(s, s)
+
+
+def is_bad_token(symbol: str) -> bool:
+    s = (symbol or "").lower()
+    return any(k in s for k in BAD_KEYWORDS)
+
+
 def valid_pair(base: str, quote: str) -> bool:
-    base = (base or "").upper()
-    quote = (quote or "").upper()
+    base = normalize_symbol(base)
+    quote = normalize_symbol(quote)
 
     if not base or not quote:
         return False
@@ -168,17 +194,6 @@ def valid_pair(base: str, quote: str) -> bool:
     return True
 
 
-def is_bad_token(symbol: str) -> bool:
-    s = (symbol or "").lower()
-    return any(k in s for k in BAD_KEYWORDS)
-
-
-def request_json(url: str, params: Optional[Dict[str, Any]] = None) -> Any:
-    r = requests.get(url, params=params, timeout=REQUEST_TIMEOUT)
-    r.raise_for_status()
-    return r.json()
-
-
 def extract_pool_address_from_url(url: str) -> str:
     if not url:
         return ""
@@ -190,8 +205,8 @@ def extract_pool_address_from_url(url: str) -> str:
 
 def normalize_pool(row: Dict[str, Any]) -> Dict[str, Any]:
     row["pair"] = row.get("pair", "-")
-    row["base_symbol"] = (row.get("base_symbol") or "").upper()
-    row["quote_symbol"] = (row.get("quote_symbol") or "").upper()
+    row["base_symbol"] = normalize_symbol(row.get("base_symbol") or "")
+    row["quote_symbol"] = normalize_symbol(row.get("quote_symbol") or "")
     row["dex"] = row.get("dex") or "-"
     row["liq"] = to_float(row.get("liq"), 0.0)
     row["vol"] = to_float(row.get("vol"), 0.0)
@@ -199,6 +214,7 @@ def normalize_pool(row: Dict[str, Any]) -> Dict[str, Any]:
     row["pool_address"] = (row.get("pool_address") or "").lower()
     row["pair_created_at"] = int(to_float(row.get("pair_created_at"), 0))
     row["chain"] = row.get("chain") or "-"
+    row["pair"] = f"{row['base_symbol']}/{row['quote_symbol']}" if row["base_symbol"] and row["quote_symbol"] else row["pair"]
     return row
 
 
@@ -246,24 +262,53 @@ def merge_pools(pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 def deduplicate_same_pair(pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     result: Dict[str, Dict[str, Any]] = {}
+    base_token_count: Dict[str, int] = {}
 
-    for p in pools:
-        pair_key = (p.get("pair") or "").upper()
-        if not pair_key:
+    # 유동성 큰 순서부터 정렬한 뒤 pair 중복 및 과다 토큰 노출 억제
+    for p in sorted(pools, key=lambda x: (x["liq"], x["vol"]), reverse=True):
+        base = normalize_symbol(p.get("base_symbol", ""))
+        quote = normalize_symbol(p.get("quote_symbol", ""))
+        pair_key = f"{base}/{quote}"
+
+        # pair 중복 제거
+        if pair_key in result:
             continue
 
-        if pair_key not in result:
-            result[pair_key] = p
-            continue
+        # BSC/전체에서 같은 base 토큰이 너무 많이 반복되는 현상 완화
+        # LGNS는 강제 유지, 나머지는 base 토큰당 최대 2개
+        if base != "LGNS":
+            cnt = base_token_count.get(base, 0)
+            if cnt >= 2:
+                continue
+            base_token_count[base] = cnt + 1
 
-        if p["liq"] > result[pair_key]["liq"]:
-            result[pair_key] = p
-            continue
-
-        if p["liq"] == result[pair_key]["liq"] and p["vol"] > result[pair_key]["vol"]:
-            result[pair_key] = p
+        result[pair_key] = p
 
     return list(result.values())
+
+
+def final_filter(chain: str, pools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    filtered: List[Dict[str, Any]] = []
+
+    for p in pools:
+        base = normalize_symbol(p["base_symbol"])
+        quote = normalize_symbol(p["quote_symbol"])
+
+        if chain == "bsc":
+            if p["liq"] < MIN_LIQUIDITY_BSC:
+                continue
+
+        # 너무 작은 유동성 대비 거래량 왜곡 제거
+        if p["vol"] > p["liq"] * 3:
+            continue
+
+        # 한번 더 방어적으로 밈 제거
+        if is_bad_token(base) or is_bad_token(quote):
+            continue
+
+        filtered.append(p)
+
+    return filtered
 
 
 def pool_passes_common_filters(base_s: str, quote_s: str, liquidity: float, volume_h24: float) -> bool:
@@ -276,7 +321,6 @@ def pool_passes_common_filters(base_s: str, quote_s: str, liquidity: float, volu
     if volume_h24 < MIN_VOLUME_DEFAULT:
         return False
 
-    # 펌핑/왜곡 제거
     if volume_h24 > liquidity * 3:
         return False
 
@@ -310,8 +354,8 @@ def fetch_gecko(chain: str) -> List[Dict[str, Any]]:
                 quote = included.get(quote_id, {}).get("attributes", {})
                 dex = included.get(dex_id, {}).get("attributes", {})
 
-                base_s = (base.get("symbol") or "").upper()
-                quote_s = (quote.get("symbol") or "").upper()
+                base_s = normalize_symbol(base.get("symbol") or "")
+                quote_s = normalize_symbol(quote.get("symbol") or "")
 
                 liquidity = to_float(attr.get("reserve_in_usd"), 0.0)
                 volume_h24 = to_float((attr.get("volume_usd") or {}).get("h24"), 0.0)
@@ -356,8 +400,8 @@ def fetch_dex(chain: str, keywords: List[str]) -> List[Dict[str, Any]]:
                 base = p.get("baseToken", {}) or {}
                 quote = p.get("quoteToken", {}) or {}
 
-                base_s = (base.get("symbol") or "").upper()
-                quote_s = (quote.get("symbol") or "").upper()
+                base_s = normalize_symbol(base.get("symbol") or "")
+                quote_s = normalize_symbol(quote.get("symbol") or "")
 
                 liquidity = to_float((p.get("liquidity") or {}).get("usd"), 0.0)
                 volume_h24 = to_float((p.get("volume") or {}).get("h24"), 0.0)
@@ -409,9 +453,7 @@ def build_pool_universe(chain: str, dex_chain: str, keywords: List[str]) -> List
 
     pools = merge_pools(all_pools)
     pools = deduplicate_same_pair(pools)
-
-    if chain == "bsc":
-        pools = [p for p in pools if p["liq"] > MIN_LIQUIDITY_BSC]
+    pools = final_filter(chain=dex_chain, pools=pools)
 
     return pools
 
@@ -451,7 +493,6 @@ def detect_new_pools(chain_label: str, pools: List[Dict[str, Any]], state: Dict[
         key = unique_key(p)
         prev = pool_state.get(key)
 
-        # 과거에 본 적 없고, 실제 생성 시간이 최근 24시간 이내인 경우 우선
         if prev is None:
             created_at = p.get("pair_created_at", 0)
             age_h = hours_since(created_at)
@@ -560,6 +601,8 @@ def main() -> None:
     message_parts.append("- LGNS 대표 풀 강제 포함")
     message_parts.append("- 중복 제거는 pool_address 기준")
     message_parts.append("- 같은 pair는 가장 큰 유동성 1개만 유지")
+    message_parts.append("- USDT0/USDC.E 등 표기 통합")
+    message_parts.append("- 밈코인/펌핑 필터 적용")
     message_parts.append("- 유동성 급증 알림 포함")
     message_parts.append("- 신규 풀 탐지 포함")
 
