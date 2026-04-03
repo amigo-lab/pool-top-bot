@@ -11,6 +11,7 @@ TOP_N = 5
 GECKO_BASE_URL = "https://api.geckoterminal.com/api/v2"
 DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
 DEX_TOKEN_PAIRS_URL = "https://api.dexscreener.com/token-pairs/v1"
+DEX_PAIR_URL = "https://api.dexscreener.com/latest/dex/pairs"
 
 NETWORKS = {
     "polygon_pos": {
@@ -35,8 +36,10 @@ NETWORKS = {
             "MATIC",
         ],
         "seed_token_addresses": [
-            # LGNS / Longinus
-            "0xeb51d9a39ad5eef215dc0bf39a8821ff804a0f01",
+            "0xeb51d9a39ad5eef215dc0bf39a8821ff804a0f01",  # LGNS token
+        ],
+        "seed_pair_addresses": [
+            "0x882df4b0fb50a229c3b4124eb18c759911485bfb",  # LGNS/DAI main pool
         ],
     },
     "bsc": {
@@ -56,9 +59,8 @@ NETWORKS = {
             "Venus",
             "Lista",
         ],
-        "seed_token_addresses": [
-            # 여기에 나중에 BSC에서 꼭 잡고 싶은 토큰 주소를 추가 가능
-        ],
+        "seed_token_addresses": [],
+        "seed_pair_addresses": [],
     },
 }
 
@@ -80,7 +82,7 @@ BAD_KEYWORDS = {
 
 REQUEST_HEADERS = {
     "Accept": "application/json",
-    "User-Agent": "pool-top-bot/4.0",
+    "User-Agent": "pool-top-bot/5.0",
 }
 
 
@@ -111,7 +113,6 @@ def fmt_num(value: Optional[float]) -> str:
 def send_telegram_message(text: str) -> None:
     if not TG_BOT_TOKEN or not TG_CHAT_ID:
         raise ValueError("TG_BOT_TOKEN 또는 TG_CHAT_ID가 없습니다.")
-
     url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TG_CHAT_ID,
@@ -184,16 +185,12 @@ def normalize_pool_row(row: Dict[str, Any]) -> Dict[str, Any]:
 def pool_passes_filter(pool: Dict[str, Any]) -> bool:
     if is_bad_name(pool["base_name"]) or is_bad_name(pool["quote_name"]):
         return False
-
     if is_excluded_pair(pool["base_symbol"], pool["quote_symbol"]):
         return False
-
     if pool["liquidity_usd"] < 50_000:
         return False
-
     if pool["volume_24h"] < 5_000:
         return False
-
     return True
 
 
@@ -228,7 +225,6 @@ def merge_pool(pool_map: Dict[str, Dict[str, Any]], chain_key: str, row: Dict[st
     prev["liquidity_usd"] = max(prev["liquidity_usd"], row["liquidity_usd"])
     prev["volume_24h"] = max(prev["volume_24h"], row["volume_24h"])
     prev["tx_count_24h"] = max(prev["tx_count_24h"], row["tx_count_24h"])
-
     if prev.get("url") == "-" and row.get("url") != "-":
         prev["url"] = row["url"]
 
@@ -310,7 +306,7 @@ def collect_from_gecko(chain_key: str, pool_map: Dict[str, Dict[str, Any]]) -> N
 
 
 # ----------------------------
-# DexScreener free search/token-pairs
+# DexScreener free endpoints
 # ----------------------------
 def fetch_dex_search(query: str) -> List[Dict[str, Any]]:
     data = request_json(DEX_SEARCH_URL, params={"q": query})
@@ -325,6 +321,14 @@ def fetch_dex_token_pairs(chain_id: str, token_address: str) -> List[Dict[str, A
     if isinstance(data, list):
         return data
     return []
+
+
+def fetch_dex_pair(chain_id: str, pair_address: str) -> List[Dict[str, Any]]:
+    url = f"{DEX_PAIR_URL}/{chain_id}/{pair_address}"
+    data = request_json(url)
+    if not isinstance(data, dict):
+        return []
+    return data.get("pairs", []) or []
 
 
 def dex_pair_to_row(pair: Dict[str, Any]) -> Dict[str, Any]:
@@ -372,12 +376,26 @@ def collect_from_dex_token_pairs(chain_key: str, dex_chain_id: str, token_addres
             merge_pool(pool_map, chain_key, dex_pair_to_row(pair))
 
 
+def collect_from_dex_pair_addresses(chain_key: str, dex_chain_id: str, pair_addresses: List[str], pool_map: Dict[str, Dict[str, Any]]) -> None:
+    for pair_address in pair_addresses:
+        try:
+            pairs = fetch_dex_pair(dex_chain_id, pair_address)
+        except Exception:
+            pairs = []
+
+        for pair in pairs:
+            if (pair.get("chainId") or "").lower() != dex_chain_id.lower():
+                continue
+            merge_pool(pool_map, chain_key, dex_pair_to_row(pair))
+
+
 def build_top5_for_network(chain_key: str, chain_cfg: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
     pool_map: Dict[str, Dict[str, Any]] = {}
 
     collect_from_gecko(chain_key, pool_map)
     collect_from_dex_search(chain_key, chain_cfg["dex_chain_id"], chain_cfg["seed_queries"], pool_map)
     collect_from_dex_token_pairs(chain_key, chain_cfg["dex_chain_id"], chain_cfg["seed_token_addresses"], pool_map)
+    collect_from_dex_pair_addresses(chain_key, chain_cfg["dex_chain_id"], chain_cfg["seed_pair_addresses"], pool_map)
 
     pools = list(pool_map.values())
 
@@ -433,8 +451,8 @@ def build_message() -> str:
 
     sections.append("[안내]")
     sections.append("- 무료 API 조합 버전")
-    sections.append("- Gecko 상위 풀 페이지 + DexScreener 검색 + DexScreener 주소기반 token-pairs 조회")
-    sections.append("- LGNS는 주소 기반 조회를 추가해 누락 가능성을 줄인 버전")
+    sections.append("- Gecko 상위 풀 페이지 + DexScreener 검색 + token-pairs + pair 직접조회")
+    sections.append("- LGNS는 대표 pair 주소를 직접 넣어 누락을 줄인 버전")
 
     return "\n".join(sections).strip()
 
