@@ -1,1 +1,268 @@
-
+{
+  "pools": {
+    "0xa41Bc0AFfbA7Fd420d186b84899d7ab2aC57fcD1": {
+      "liq": 1170021.68,
+      "last_seen": 1775405148
+    },
+    "0x26216b7b7dE80399b601b8217DA272b82d4f34cb": {
+      "liq": 178780.67,
+      "last_seen": 1775405148
+    },
+    "0x9785eF59E2b499fB741674ecf6fAF912Df7b3C1b": {
+      "liq": 227984.66,
+      "last_seen": 1775405148
+    },
+    "0xf13203ddbf2c9816a79b656a1a952521702715d92fea465b84ae2ed6e94a7f22": {
+      "liq": 79902.32,
+      "last_seen": 1775405148
+    },
+    "0xe1d05fe2b899df927bc67e5eedaccb95d06bf7c769ed68469bb773615f2401f8": {
+      "liq": 134590.49,
+      "last_seen": 1775405148
+    },
+    "0x7681c00520c26da8d8970c21a65461c726f274068eb08743debc1178e697044e": {
+      "liq": 187177.69,
+      "last_seen": 1775405148
+    },
+    "0xd30B9fA98713425c0302593d7F8F094be31E9710": {
+      "liq": 108776.86,
+      "last_seen": 1775405148
+    },
+    "refv1-6416": {
+      "liq": 1169631.81,
+      "last_seen": 1775405148
+    },
+    "1220-ibc_4ABBEF4C8926DDDB320AE5188CFD63267ABBCEFC0583E4AE05D6E5AA2401DDAB-ibc_498A0751C798A0D9A389AA3691123DADA57DAA4FE165D5C75894505B876BA6E4": {
+      "liq": 106730.59,
+      "last_seen": 1775405148
+    },
+    "0xD56da2B74bA826f19015E6B7Dd9Dae1903E85DA1": {
+      "liq": 172207.73,
+      "last_seen": 1775405148
+    },
+    "0x5F41a8205a5Be2aA317c562E456E3b1231d3518F": {
+      "liq": 2481430.81,
+      "last_seen": 1775405148
+    },
+    "0xB3cF80E7E3988705E45F5EA1Cf0Be8a50fA8Af17": {
+      "liq": 1032386.41,
+      "last_seen": 1775405148
+    },
+    "0x5f07bb9fEE6062e9D09A52E6d587c64bAD6bA706": {
+      "liq": 204083.28,
+      "last_seen": 1775405148
+    },
+    "0x7fe7d370617e793b178de6efc9bc5813382f2e2866ee298ea1917d8b8dce436b-10-22": {
+      "liq": 1853755.47,
+      "last_seen": 1775405148
+    },
+    "62Km9uVgHEwe2mhXZimAiJRgL7rSnWHgafswbpnFZ5tM": {
+      "liq": 625915219.57,
+      "last_seen": 1775405148
+    },
+    "0x5329b576fa57846563a03a3ea6620fec4eeb8fb68fdef4dbe18531c590ba7905-1000767-0xc64980e4eaf9a1151bd21712b9946b81e41e2b92": {
+      "liq": 709805.52,
+      "last_seen": 1775405148
+    },
+    "HktfL7iwGKT5QHjywQkcDnZXScoh811k7akrMZJkCcEF": {
+      "liq": 6038640.23,
+      "last_seen": 1775405148
+    },
+    "0xF55791AfBB35aD42984f18D6Fe3e1fF73D81900c": {
+      "liq": 319850.11,
+      "last_seen": 1775405148
+    },
+    "0x12CdDeD759B14bf6A34FbF6638aec9B735824a9E": {
+      "liq": 857671.94,
+      "last_seen": 1775405148
+    },
+    "3potGhhaNyzvCNq1CGh2wLbZLLMjpdPtG1Hpj8q2DDVR": {
+      "liq": 280106.19,
+      "last_seen": 1775405148
+    },
+    "AU971DrPyhhrpRnmEBp5pDTWL2ny7nofb5vYBjDJkR2E": {
+      "liq": 214210.73,
+      "last_seen": 1775405148
+    },
+    "0x04566Bf83399E4F750728d1ef57008AedDA00E71": {
+      "liq": 761896.63,
+      "last_seen": 1775405148
+    },
+    "0x0d76866F78FcBCa2730E60C5997d59d6ba585613": {
+      "liq": 118158.66,
+      "last_seen": 1775405148
+    },
+    "0x66C0232D3C5F0c25914785606e73BD41B788b9aC": {
+      "liq": 148695.58,
+      "last_seen": 1775405148
+    },
+    "0xBFE5eafd86cf270cf0eCca07f4fD0DE67EE8bcfB": {
+      "liq": 290347.0,
+      "last_seen": 1775405148
+    },
+    "0x90E8a5b881D211f418d77Ba8978788b62544914B": {
+      "liq": 1346295.27,
+      "last_seen": 1775405148
+    },
+    "0x814A23B053FD0f102AEEda0459215C2444799C70": {
+      "liq": 360248.31,
+      "last_seen": 1775405148
+    },
+    "0xF0601AA87a7341a38034B49f9517dd3adC2DdeC4": {
+      "liq": 264606.73,
+      "last_seen": 1775405148
+    },
+    "0x3b6c029E6409f2868769871F9Ed6825b15BDca15": {
+      "liq": 289106.6,
+      "last_seen": 1775405148
+    },
+    "0x65f1535a8C82613260e53d84d5745B2A8b31f52a": {
+      "liq": 121865.13,
+      "last_seen": 1775405148
+    },
+    "0xA111C17f8B8303280d3EB01BBcd61000AA7F39F9": {
+      "liq": 1207142.84,
+      "last_seen": 1775405148
+    },
+    "0xd5E04ba35908D7bF5BD2eAd7e3e14d21df07DC01": {
+      "liq": 112257.25,
+      "last_seen": 1775405148
+    },
+    "0x5Ec5b1E9b1Bd5198343ABB6E55Fb695d2F7Bb308": {
+      "liq": 412724.35,
+      "last_seen": 1775405148
+    },
+    "0x488d13F980609A38565cC8BdDC6987f069c65749": {
+      "liq": 115822.73,
+      "last_seen": 1775405148
+    },
+    "0x77852ca7A18a67eFC8C1B22da4Ea13159FbBb5dC": {
+      "liq": 1232705.39,
+      "last_seen": 1775405148
+    },
+    "0x811491E52f828d934966BEaF21D94f14a49bF225": {
+      "liq": 202144.98,
+      "last_seen": 1775405148
+    },
+    "0x7F5E86A423C900e113dd2f6B6366B1265dE59D6b": {
+      "liq": 627147.71,
+      "last_seen": 1775405148
+    },
+    "0x0e70C050D81E8d328694c9557AF989610a411c45": {
+      "liq": 1112589.57,
+      "last_seen": 1775405148
+    },
+    "B5EwJVDuAauzUEEdwvbuXzbFFgEYnUqqS37TUM1c4PQA": {
+      "liq": 1544191.6,
+      "last_seen": 1775405148
+    },
+    "0x57332c214E647063bB4c5A73e5A8b7bbA79Be1E4": {
+      "liq": 461441.84,
+      "last_seen": 1775405148
+    },
+    "4kdxjt8pKEW4qV4ji4HANixwswDJw3Egn8L4x2BEWQqT": {
+      "liq": 127601.57,
+      "last_seen": 1775405148
+    },
+    "55BrDTCLWayM16GwrMEQU57o4PTm6ceF9wavSdNZcEiy": {
+      "liq": 195089.39,
+      "last_seen": 1775405148
+    },
+    "0xe62fD4661C85e126744cC335E9bca8Ae3D5d19D1": {
+      "liq": 1244092.04,
+      "last_seen": 1775405148
+    },
+    "4v8ufj8Hj7UvFgtofQJAtzUud5xomwZfEqfCTHZ4wM72": {
+      "liq": 1487007.97,
+      "last_seen": 1775405148
+    },
+    "0x033068f6539f8e6e6b131e6b2b814e6c34a5224bc66947c47dab9dfee93b35fb-0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac-170141183460469235273462165868118016-1000-0x0": {
+      "liq": 2358385.58,
+      "last_seen": 1775405148
+    },
+    "0x7ED634e87db3Bd1Fd6bE6F15E38f3434c75D64c7": {
+      "liq": 136140.21,
+      "last_seen": 1775405148
+    },
+    "0x3E00Dd875fEf6cE2209007c1e625d9A656E32556": {
+      "liq": 587552.78,
+      "last_seen": 1775405148
+    },
+    "0x8F09fFf247B8fDB80461E5Cf5E82dD1aE2EBd6d7": {
+      "liq": 2460769.1,
+      "last_seen": 1775405148
+    },
+    "3sehQcVywWcFJZ1ri3NmJ7MRkrXbViJMRNN5b6kz8Mqn": {
+      "liq": 342142.17,
+      "last_seen": 1775405148
+    },
+    "8GuXrPq6deS1ZzNXYmBjVZ5P48cAmKGrhhpdAn2FURPC": {
+      "liq": 370941.66,
+      "last_seen": 1775405148
+    },
+    "thala-940": {
+      "liq": 672064.93,
+      "last_seen": 1775405148
+    },
+    "53oyyjgybx6dH7i5aGeKfBUi3xPJQDeBkaENPri57x2H": {
+      "liq": 589378.51,
+      "last_seen": 1775405148
+    },
+    "0xC0Cd56E070e25913D631876218609F2191dA1c2A": {
+      "liq": 197399.4,
+      "last_seen": 1775405148
+    },
+    "FhpUGWtKk6iLW9maurhjVwkTLbhyt4oL1RB5DyFujK8D": {
+      "liq": 229547.41,
+      "last_seen": 1775405148
+    },
+    "Dm7q8yn7bPPW5kGjBfN4ZzZN49jA7BLZPyYr3c7fwJza": {
+      "liq": 52044571.0,
+      "last_seen": 1775405148
+    },
+    "2CVhNsezh11H4W4UWqSGpUkXTbqQLuoZoz6WWMteRknr": {
+      "liq": 34021968.7,
+      "last_seen": 1775405148
+    },
+    "8PJJ9oUkySV9LJ9MyYXSyZufQwCmMn3e8gMWqjKbeRno": {
+      "liq": 44765048.26,
+      "last_seen": 1775405148
+    },
+    "AdApv8YW3dXYemhkyr97Y6XSPfDT57PwNBE3VLgQXUco": {
+      "liq": 25100797.2,
+      "last_seen": 1775405148
+    },
+    "BKLmmQ8FoMKoXRKiMrbfiuHmEdCB5EXMXHsLX3fPz4qi": {
+      "liq": 919650.81,
+      "last_seen": 1775405148
+    },
+    "0x430db0c36e81e6a2a48ded25421bbb8bd71bdcc42361bcb533cc2fc7a96bdfb7": {
+      "liq": 101010.67,
+      "last_seen": 1775405148
+    }
+  },
+  "alerts": {
+    "0xa41Bc0AFfbA7Fd420d186b84899d7ab2aC57fcD1:new": true,
+    "0x9785eF59E2b499fB741674ecf6fAF912Df7b3C1b:new": true,
+    "refv1-6416:new": true,
+    "HktfL7iwGKT5QHjywQkcDnZXScoh811k7akrMZJkCcEF:new": true,
+    "0xF55791AfBB35aD42984f18D6Fe3e1fF73D81900c:new": true,
+    "0x12CdDeD759B14bf6A34FbF6638aec9B735824a9E:new": true,
+    "3potGhhaNyzvCNq1CGh2wLbZLLMjpdPtG1Hpj8q2DDVR:new": true,
+    "AU971DrPyhhrpRnmEBp5pDTWL2ny7nofb5vYBjDJkR2E:new": true,
+    "0x04566Bf83399E4F750728d1ef57008AedDA00E71:new": true,
+    "0xBFE5eafd86cf270cf0eCca07f4fD0DE67EE8bcfB:new": true,
+    "0x90E8a5b881D211f418d77Ba8978788b62544914B:new": true,
+    "0xF0601AA87a7341a38034B49f9517dd3adC2DdeC4:new": true,
+    "0x3b6c029E6409f2868769871F9Ed6825b15BDca15:new": true,
+    "0x77852ca7A18a67eFC8C1B22da4Ea13159FbBb5dC:new": true,
+    "0x7F5E86A423C900e113dd2f6B6366B1265dE59D6b:new": true,
+    "B5EwJVDuAauzUEEdwvbuXzbFFgEYnUqqS37TUM1c4PQA:new": true,
+    "0xe62fD4661C85e126744cC335E9bca8Ae3D5d19D1:new": true,
+    "4v8ufj8Hj7UvFgtofQJAtzUud5xomwZfEqfCTHZ4wM72:new": true,
+    "0x033068f6539f8e6e6b131e6b2b814e6c34a5224bc66947c47dab9dfee93b35fb-0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac-170141183460469235273462165868118016-1000-0x0:new": true,
+    "0x3E00Dd875fEf6cE2209007c1e625d9A656E32556:new": true,
+    "8GuXrPq6deS1ZzNXYmBjVZ5P48cAmKGrhhpdAn2FURPC:new": true,
+    "FhpUGWtKk6iLW9maurhjVwkTLbhyt4oL1RB5DyFujK8D:new": true
+  }
+}
