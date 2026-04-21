@@ -276,89 +276,89 @@
     "polygon_pos:0x1011e6d2982eb5677cc8a59eee6e23492dbf37b7": {
       "pair": "DAI/PIX",
       "dex": "Uniswap V2 (Polygon)",
-      "liq": 3600387.8268,
-      "vol": 26619.4286437946,
+      "liq": 3613289.5394,
+      "vol": 25192.7190865938,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0x1011e6d2982eb5677cc8a59eee6e23492dbf37b7",
       "chain": "polygon_pos",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0x124fcfd1b923485c8ccf275afbee4bf557b232d6": {
       "pair": "AIPF/USDT",
       "dex": "Uniswap V2 (Polygon)",
-      "liq": 3646878.3254,
-      "vol": 259997.995465065,
+      "liq": 3800586.9791,
+      "vol": 300867.656331049,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0x124fcfd1b923485c8ccf275afbee4bf557b232d6",
       "chain": "polygon_pos",
       "first_seen": 1775405293,
-      "last_seen": 1776653550,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0xd3a9331a654444f9fe7ddbaec6678c2dc9113197": {
       "pair": "CES/USDT",
       "dex": "W-DEX (Polygon)",
-      "liq": 1952704.4414,
-      "vol": 909817.41447838,
+      "liq": 1933761.0669,
+      "vol": 872296.606708918,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0xd3a9331a654444f9fe7ddbaec6678c2dc9113197",
       "chain": "polygon_pos",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0x35afbb9d4dbe49f7579ccfd659ee6854a387faa0": {
       "pair": "IDL/USDT",
       "dex": "Uniswap V2 (Polygon)",
-      "liq": 1543163.1838,
-      "vol": 70679.3896958969,
+      "liq": 1561156.1712,
+      "vol": 73495.4423955275,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0x35afbb9d4dbe49f7579ccfd659ee6854a387faa0",
       "chain": "polygon_pos",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon:0xe1e09ce7aac2740846d9b6d9d56f588c65314ecb": {
       "pair": "TEL/WBTC",
       "dex": "balancer",
-      "liq": 953813.57,
-      "vol": 53347.38,
+      "liq": 965418.74,
+      "vol": 55978.95,
       "url": "https://dexscreener.com/polygon/0xe1e09ce7aac2740846d9b6d9d56f588c65314ecb",
       "chain": "polygon",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon:0x3bd8a254163f8328efcc4f8c36da566753462433": {
       "pair": "TEL/USDC",
       "dex": "balancer",
-      "liq": 706032.5,
-      "vol": 63714.86,
+      "liq": 712157.42,
+      "vol": 73281.16,
       "url": "https://dexscreener.com/polygon/0x3bd8a254163f8328efcc4f8c36da566753462433",
       "chain": "polygon",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0x3bd8a254163f8328efcc4f8c36da566753462433": {
       "pair": "USDC/TEL",
       "dex": "Balancer V2 (Polygon)",
-      "liq": 706550.302,
-      "vol": 63756.6588067142,
+      "liq": 713040.0291,
+      "vol": 73246.8699821016,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0x3bd8a254163f8328efcc4f8c36da566753462433",
       "chain": "polygon_pos",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon:0x2aceda63b5e958c45bd27d916ba701bc1dc08f7a": {
       "pair": "AAVE/WETH",
       "dex": "uniswap",
-      "liq": 358873.99,
-      "vol": 107147.87,
+      "liq": 364556.31,
+      "vol": 148067.25,
       "url": "https://dexscreener.com/polygon/0x2aceda63b5e958c45bd27d916ba701bc1dc08f7a",
       "chain": "polygon",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1640274740
     },
     "polygon:0xb2b6d423e535b57aad06e9866803b95fb66152ea": {
@@ -386,12 +386,12 @@
     "polygon:0x75ce9352d3009157b15fdf8e04c4a540ff237b69": {
       "pair": "SDECT/DAI",
       "dex": "quickswap",
-      "liq": 230623.77,
-      "vol": 28436.37,
+      "liq": 230127.69,
+      "vol": 65298.7,
       "url": "https://dexscreener.com/polygon/0x75ce9352d3009157b15fdf8e04c4a540ff237b69",
       "chain": "polygon",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1772066072
     },
     "polygon_pos:0xf8a59c46576ac02a712caa74f4ed0610cbe1374d": {
@@ -408,12 +408,12 @@
     "polygon:0xc42bf5cd16d9eb1e892b66bb32a3892dcb7bb75c": {
       "pair": "AAVE/USDC",
       "dex": "uniswap",
-      "liq": 173411.06,
-      "vol": 113454.04,
+      "liq": 163950.74,
+      "vol": 117302.75,
       "url": "https://dexscreener.com/polygon/0xc42bf5cd16d9eb1e892b66bb32a3892dcb7bb75c",
       "chain": "polygon",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1699989356
     },
     "polygon:0x7e2eaa9514c7a56b4d556ff0d1009cb9c7f2b89d": {
@@ -430,34 +430,34 @@
     "polygon_pos:0x3dc10d7bfb94eeb009203e84a653e5764f71771d": {
       "pair": "LINK/WETH",
       "dex": "Uniswap V3 (Polygon POS)",
-      "liq": 169079.5695,
-      "vol": 113502.574118893,
+      "liq": 170570.7573,
+      "vol": 133521.47265746,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0x3dc10d7bfb94eeb009203e84a653e5764f71771d",
       "chain": "polygon_pos",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon:0xde2d1fd2e8238aba80a5b80c7262e4833d92f624": {
       "pair": "QUICK/WETH",
       "dex": "quickswap",
-      "liq": 189170.31,
-      "vol": 21541.54,
+      "liq": 192145.48,
+      "vol": 43604.16,
       "url": "https://dexscreener.com/polygon/0xde2d1fd2e8238aba80a5b80c7262e4833d92f624",
       "chain": "polygon",
       "first_seen": 1775405293,
-      "last_seen": 1776653550,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0x046851643a71a90d03202e0f4453954bc3abd1b3": {
       "pair": "EBCC/USDT",
       "dex": "Uniswap V3 (Polygon POS)",
-      "liq": 128541.7078,
-      "vol": 13312.9276604751,
+      "liq": 128019.6314,
+      "vol": 20016.2625938494,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0x046851643a71a90d03202e0f4453954bc3abd1b3",
       "chain": "polygon_pos",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0xfb608080df01aca0c7cd9433d8253172bba32fbc": {
@@ -485,67 +485,67 @@
     "polygon:0xaec86dc2a08cd7cf8d90ee71d0e4864f25ba497b": {
       "pair": "EFI/DAI",
       "dex": "quickswap",
-      "liq": 92648.61,
-      "vol": 20757.81,
+      "liq": 91697.97,
+      "vol": 19869.9,
       "url": "https://dexscreener.com/polygon/0xaec86dc2a08cd7cf8d90ee71d0e4864f25ba497b",
       "chain": "polygon",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1755705897
     },
     "polygon_pos:0x4af62a93775c093af3e32949ef23c9a323d20817": {
       "pair": "BRZ/USDT",
       "dex": "Uniswap V3 (Polygon POS)",
-      "liq": 98872.1022,
-      "vol": 167759.380826369,
+      "liq": 95219.5902,
+      "vol": 183423.355884728,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0x4af62a93775c093af3e32949ef23c9a323d20817",
       "chain": "polygon_pos",
       "first_seen": 1775405293,
-      "last_seen": 1776517591,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "bsc:0xcaaf3c41a40103a23eeaa4bba468af3cf5b0e0d8": {
       "pair": "ARK/USDT",
       "dex": "pancakeswap",
-      "liq": 78320949.93,
-      "vol": 6647813.9,
+      "liq": 77346406.95,
+      "vol": 6732418.05,
       "url": "https://dexscreener.com/bsc/0xcaaf3c41a40103a23eeaa4bba468af3cf5b0e0d8",
       "chain": "bsc",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1756206977
     },
     "bsc:0x0b32ea94da1f6679b11686ead47aa4c6bf38cd59": {
       "pair": "BTCB/MGC",
       "dex": "pancakeswap",
-      "liq": 15975854.48,
-      "vol": 324738.79,
+      "liq": 16583332.63,
+      "vol": 1235910.3,
       "url": "https://dexscreener.com/bsc/0x0b32ea94da1f6679b11686ead47aa4c6bf38cd59",
       "chain": "bsc",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1714649592
     },
     "bsc:0x0ed7e52944161450477ee417de9cd3a859b14fd0": {
       "pair": "CAKE/WBNB",
       "dex": "pancakeswap",
-      "liq": 15190179.07,
-      "vol": 216513.94,
+      "liq": 15293914.78,
+      "vol": 251792.57,
       "url": "https://dexscreener.com/bsc/0x0ed7e52944161450477ee417de9cd3a859b14fd0",
       "chain": "bsc",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "bsc:0x6865704ff097b1105ed42b8517020e14fe9a2abd": {
       "pair": "OLY/USDT",
       "dex": "pancakeswap",
-      "liq": 13450406.44,
-      "vol": 590143.75,
+      "liq": 13507766.16,
+      "vol": 586020.83,
       "url": "https://dexscreener.com/bsc/0x6865704ff097b1105ed42b8517020e14fe9a2abd",
       "chain": "bsc",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1753981039
     },
     "bsc:0xbc42145d5a574ede9b8860fca2a49eb7b239efa5": {
@@ -562,12 +562,12 @@
     "bsc:0x5166508edf57c5218b0755acefd0fe25f253c084": {
       "pair": "LIBRA/WBNB",
       "dex": "pancakeswap",
-      "liq": 4098731.46,
-      "vol": 2987941.34,
+      "liq": 3995850.62,
+      "vol": 2346506.89,
       "url": "https://dexscreener.com/bsc/0x5166508edf57c5218b0755acefd0fe25f253c084",
       "chain": "bsc",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1761185151
     },
     "bsc:0x778121b464151fe5d931587c457e48fcaaa0dc7a": {
@@ -584,12 +584,12 @@
     "bsc:0x933477eba23726ca95a957cb85dbb1957267ef85": {
       "pair": "WKC/WBNB",
       "dex": "pancakeswap",
-      "liq": 1236300.57,
-      "vol": 103131.29,
+      "liq": 1216308.68,
+      "vol": 127131.73,
       "url": "https://dexscreener.com/bsc/0x933477eba23726ca95a957cb85dbb1957267ef85",
       "chain": "bsc",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1647790420
     },
     "bsc:0x7e58f160b5b77b8b24cd9900c09a3e730215ac47": {
@@ -617,23 +617,23 @@
     "bsc:0xf0a949d3d93b833c183a27ee067165b6f2c9625e": {
       "pair": "4/WBNB",
       "dex": "pancakeswap",
-      "liq": 854500.08,
-      "vol": 642562.19,
+      "liq": 870432.73,
+      "vol": 510027.36,
       "url": "https://dexscreener.com/bsc/0xf0a949d3d93b833c183a27ee067165b6f2c9625e",
       "chain": "bsc",
       "first_seen": 1775405293,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1759291721
     },
     "bsc:0x7d90deedb9f15c1f8fdaccc3b6bc52dc208e9c9a": {
       "pair": "CREPE/WBNB",
       "dex": "pancakeswap",
-      "liq": 717443.97,
-      "vol": 50288.65,
+      "liq": 724301.88,
+      "vol": 50159.1,
       "url": "https://dexscreener.com/bsc/0x7d90deedb9f15c1f8fdaccc3b6bc52dc208e9c9a",
       "chain": "bsc",
       "first_seen": 1775405293,
-      "last_seen": 1776653550,
+      "last_seen": 1776739526,
       "pair_created_at": 1747929184
     },
     "bsc:0xdb25c09d96c165b62f6e6f9d9b17174738d897ba": {
@@ -650,12 +650,12 @@
     "bsc:0x6ec31af1bb9a72aacec12e4ded508861b05f4503": {
       "pair": "MYX/WBNB",
       "dex": "pancakeswap",
-      "liq": 585139.23,
-      "vol": 1724295.51,
+      "liq": 525120.73,
+      "vol": 1262688.94,
       "url": "https://dexscreener.com/bsc/0x6ec31af1bb9a72aacec12e4ded508861b05f4503",
       "chain": "bsc",
       "first_seen": 1775405293,
-      "last_seen": 1776479706,
+      "last_seen": 1776739526,
       "pair_created_at": 1746450444
     },
     "polygon_pos:0xf4b6f53cae52476476aba67a5680c1ec0091df76fec25b8a9643de828eae1485": {
@@ -672,12 +672,12 @@
     "polygon:0xda67d7c01c4c8f757c105c0890d94ac489952cd5": {
       "pair": "BET/WPOL",
       "dex": "uniswap",
-      "liq": 291583.03,
-      "vol": 5554.62,
+      "liq": 294618.54,
+      "vol": 7046.9,
       "url": "https://dexscreener.com/polygon/0xda67d7c01c4c8f757c105c0890d94ac489952cd5",
       "chain": "polygon",
       "first_seen": 1775443282,
-      "last_seen": 1776603943,
+      "last_seen": 1776739526,
       "pair_created_at": 1714811587
     },
     "polygon_pos:0x94ab9e4553ffb839431e37cc79ba8905f45bfbea": {
@@ -694,12 +694,12 @@
     "polygon_pos:0xc42bf5cd16d9eb1e892b66bb32a3892dcb7bb75c": {
       "pair": "USDC/AAVE",
       "dex": "Uniswap V3 (Polygon POS)",
-      "liq": 172947.8104,
-      "vol": 113519.781233622,
+      "liq": 164256.4002,
+      "vol": 118813.154668943,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0xc42bf5cd16d9eb1e892b66bb32a3892dcb7bb75c",
       "chain": "polygon_pos",
       "first_seen": 1775443282,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0xde2d1fd2e8238aba80a5b80c7262e4833d92f624": {
@@ -749,12 +749,12 @@
     "polygon:0x369582d2010b6ed950b571f4101e3bb9b554876f": {
       "pair": "SAND/WPOL",
       "dex": "quickswap",
-      "liq": 240346.01,
-      "vol": 5863.35,
+      "liq": 241303.92,
+      "vol": 6708.59,
       "url": "https://dexscreener.com/polygon/0x369582d2010b6ed950b571f4101e3bb9b554876f",
       "chain": "polygon",
       "first_seen": 1775481334,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1638865146
     },
     "polygon_pos:0x74af88d0c50558d503f967f351dcc83f4ac2ad46": {
@@ -776,18 +776,18 @@
       "url": "https://dexscreener.com/polygon/0x882df4b0fb50a229c3b4124eb18c759911485bfb",
       "chain": "polygon",
       "first_seen": 1775529340,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1709742872
     },
     "polygon:0x1a9221261dc445d773e66075b9e9e52f40e15ab1": {
       "pair": "AS/DAI",
       "dex": "quickswap",
-      "liq": 16182531.13,
-      "vol": 158194.43,
+      "liq": 16067795.56,
+      "vol": 142295.06,
       "url": "https://dexscreener.com/polygon/0x1a9221261dc445d773e66075b9e9e52f40e15ab1",
       "chain": "polygon",
       "first_seen": 1775529340,
-      "last_seen": 1776603943,
+      "last_seen": 1776739526,
       "pair_created_at": 1749681140
     },
     "polygon:0x124fcfd1b923485c8ccf275afbee4bf557b232d6": {
@@ -815,12 +815,12 @@
     "bsc:0xb433ae7e7011a2fb9a4bbb86140e0f653dcfcfba": {
       "pair": "AIOT/WBNB",
       "dex": "pancakeswap",
-      "liq": 1216788.64,
-      "vol": 3138263.01,
+      "liq": 1233574.27,
+      "vol": 2422065.0,
       "url": "https://dexscreener.com/bsc/0xb433ae7e7011a2fb9a4bbb86140e0f653dcfcfba",
       "chain": "bsc",
       "first_seen": 1775529340,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1745924178
     },
     "bsc:0xa341e8e8ee6bf97fa1d18c2d12f00555dc78207e": {
@@ -837,12 +837,12 @@
     "polygon:0x5fe84b85ba7dea0fbc8c4571491aca80d97f5e01": {
       "pair": "GEOD/USDT",
       "dex": "quickswap",
-      "liq": 265944.71,
-      "vol": 8063.06,
+      "liq": 265922.51,
+      "vol": 11134.34,
       "url": "https://dexscreener.com/polygon/0x5fe84b85ba7dea0fbc8c4571491aca80d97f5e01",
       "chain": "polygon",
       "first_seen": 1775568182,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0x0e7754127dedd4097be750825dbb4669bc32c956": {
@@ -903,12 +903,12 @@
     "bsc:0xba20fe9506a904a30ebb8b7c348f4969f5a5ea07": {
       "pair": "BLUAI/USDT",
       "dex": "pancakeswap",
-      "liq": 658028.36,
-      "vol": 254957.82,
+      "liq": 758175.11,
+      "vol": 316823.53,
       "url": "https://dexscreener.com/bsc/0xba20fe9506a904a30ebb8b7c348f4969f5a5ea07",
       "chain": "bsc",
       "first_seen": 1775615784,
-      "last_seen": 1775826932,
+      "last_seen": 1776739526,
       "pair_created_at": 1760966384
     },
     "bsc:0xee6ff918a1f68b5d2fdecb14b367fa2eb5c6951c": {
@@ -947,12 +947,12 @@
     "polygon_pos:0x0a28c2f5e0e8463e047c203f00f649812ae67e4f": {
       "pair": "LINK/WPOL",
       "dex": "Uniswap V3 (Polygon POS)",
-      "liq": 50560.2633,
-      "vol": 20920.2793690524,
+      "liq": 50096.0951,
+      "vol": 45819.961715564,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0x0a28c2f5e0e8463e047c203f00f649812ae67e4f",
       "chain": "polygon_pos",
       "first_seen": 1775701897,
-      "last_seen": 1776087770,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "bsc:0x703f1c0b4399a51704e798002281bf26d6f9c2e6": {
@@ -980,12 +980,12 @@
     "polygon:0x358050e271a0cfa13efe31e9faaecde39d9aa911": {
       "pair": "FCC/WBTC",
       "dex": "quickswap",
-      "liq": 187458.43,
-      "vol": 5609.82,
+      "liq": 195007.32,
+      "vol": 6930.46,
       "url": "https://dexscreener.com/polygon/0x358050e271a0cfa13efe31e9faaecde39d9aa911",
       "chain": "polygon",
       "first_seen": 1775788955,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0xcf1acfd9f4e729705a731fe3c6f35c4d3136a6148e8ad70f362dcec62b71893c": {
@@ -1156,23 +1156,23 @@
     "polygon_pos:0x55e4151499e9dba3a74cc4ba9c711f8bcc1ef565": {
       "pair": "RISE/WPOL",
       "dex": "Uniswap V2 (Polygon)",
-      "liq": 304979.6416,
-      "vol": 8376.9477864112,
+      "liq": 310089.7689,
+      "vol": 8118.7024521637,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0x55e4151499e9dba3a74cc4ba9c711f8bcc1ef565",
       "chain": "polygon_pos",
       "first_seen": 1776087770,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "polygon_pos:0xda908c0bf14ad0b61ea5ebe671ac59b2ce091cbf": {
       "pair": "LDO/WETH",
       "dex": "Uniswap V3 (Polygon POS)",
-      "liq": 77258.7651,
-      "vol": 18650.6732585242,
+      "liq": 76848.7935,
+      "vol": 26792.8332500039,
       "url": "https://www.geckoterminal.com/polygon_pos/pools/0xda908c0bf14ad0b61ea5ebe671ac59b2ce091cbf",
       "chain": "polygon_pos",
       "first_seen": 1776134629,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 0
     },
     "bsc:0x5bd808ab85c124f99080da5f864edcb39950ede5": {
@@ -1266,12 +1266,12 @@
     "bsc:0x26deb24a2623cf54452ab5183e2c34551831d54d": {
       "pair": "EVAA/USDT",
       "dex": "pancakeswap",
-      "liq": 739786.93,
-      "vol": 1268571.54,
+      "liq": 739460.51,
+      "vol": 1364134.63,
       "url": "https://dexscreener.com/bsc/0x26deb24a2623cf54452ab5183e2c34551831d54d",
       "chain": "bsc",
       "first_seen": 1776220881,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1759395829
     },
     "polygon:0x160532d2536175d65c03b97b0630a9802c274dad": {
@@ -1354,12 +1354,12 @@
     "bsc:0xcf59b8c8baa2dea520e3d549f97d4e49ade17057": {
       "pair": "KOGE/USDT",
       "dex": "pancakeswap",
-      "liq": 6401287.87,
-      "vol": 12750268.71,
+      "liq": 4830323.76,
+      "vol": 13327515.99,
       "url": "https://dexscreener.com/bsc/0xcf59b8c8baa2dea520e3d549f97d4e49ade17057",
       "chain": "bsc",
       "first_seen": 1776692795,
-      "last_seen": 1776692795,
+      "last_seen": 1776739526,
       "pair_created_at": 1747428974
     }
   },
